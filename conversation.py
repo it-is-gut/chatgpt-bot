@@ -33,7 +33,7 @@ def text_to_speech(text):
     audio_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=True)
 
     # The language of the voice that speaks.
-    speech_config.speech_synthesis_voice_name='de-CH-JanNeural'
+    speech_config.speech_synthesis_voice_name='de-CH-LeniNeural'
 
     speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
 
@@ -55,29 +55,28 @@ def text_to_speech(text):
 def send_to_openAI(text):
     openai.api_type = "azure"
     openai.api_base = os.getenv("OPENAI_ENDPOINT") 
-    openai.api_version = "2022-12-01"
+    openai.api_version = "2023-03-15-preview"
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
     print("Sending to OpenAI...")
+    
+    response = openai.ChatCompletion.create(
+        deployment_id="gpt-35", 
+        model="gpt-3.5-turbo", 
+        messages=[
+          {"role": "system", "content": "Du bist ein Experte für generative AI und nimmst an einer Podiumsdisskusion teil. Gib kurze Antworten."},
+          {"role": "user", "content": text}
+        ],
+        max_tokens=80,)
 
-    response = openai.Completion.create(
-    engine="gpt-35",
-    prompt="<|im_start|>system\nThe system participates in a open discussion round regarding generative AI.\n<|im_end|>\n<|im_start|>user\n" + text + "\n<|im_end|>\n<|im_start|>assistant",
-    temperature=1,
-    max_tokens=50,
-    top_p=0.95,
-    frequency_penalty=0,
-    presence_penalty=0,
-    stop=["<|im_end|>"])
-
-    print("Response from OpenAI: " + response.choices[0].text)
+    print("Response from OpenAI: " + response.choices[0].message.content)
     print()
 
     # if the response does not end with an ., ! or ?, remove everything after the last ., ! or ? and add a .
-    if not response.choices[0].text.endswith("!") and not response.choices[0].text.endswith("?") and not response.choices[0].text.endswith("."):
-        response.choices[0].text = response.choices[0].text.rsplit(".", 1)[0] + "."
+    if not response.choices[0].message.content.endswith("!") and not response.choices[0].message.content.endswith("?") and not response.choices[0].message.content.endswith("."):
+        response.choices[0].message.content = response.choices[0].message.content.rsplit(".", 1)[0] + "."
 
-    return response.choices[0].text
+    return response.choices[0].message.content
 
 
 # main function
