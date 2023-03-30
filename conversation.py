@@ -67,16 +67,19 @@ def send_to_openAI(text):
           {"role": "system", "content": "Du bist ein Experte für generative AI und nimmst an einer Podiumsdisskusion teil. Gib kurze Antworten."},
           {"role": "user", "content": text}
         ],
-        max_tokens=80,)
+        max_tokens=120,)
 
     print("Response from OpenAI: " + response.choices[0].message.content)
     print()
 
     # if the response does not end with an ., ! or ?, remove everything after the last ., ! or ? and add a .
     if not response.choices[0].message.content.endswith("!") and not response.choices[0].message.content.endswith("?") and not response.choices[0].message.content.endswith("."):
-        response.choices[0].message.content = response.choices[0].message.content.rsplit(".", 1)[0] + "."
+        answer_split = response.choices[0].message.content.rsplit(".", 1)[0]
 
-    return response.choices[0].message.content
+        answer = answer_split[0:len(answer_split)-2] + "."
+    else:
+        answer = response.choices[0].message.content
+    return answer
 
 
 # main function
